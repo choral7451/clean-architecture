@@ -19,7 +19,7 @@ public class LectureController {
 	private final LectureService lectureService;
 
 	@GetMapping
-	public ResponseEntity<List<LectureScheduleResponse>> companies() {
+	public ResponseEntity<List<LectureScheduleResponse>> lectureSchedules() {
 		return  new ResponseEntity<>(lectureService.getScheduleList().stream().map(LectureScheduleResponse::new).toList(), HttpStatus.OK);
 	}
 }
