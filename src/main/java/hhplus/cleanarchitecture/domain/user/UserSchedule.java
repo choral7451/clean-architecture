@@ -1,7 +1,6 @@
 package hhplus.cleanarchitecture.domain.user;
 
 import hhplus.cleanarchitecture.domain.BaseTimeEntity;
-import hhplus.cleanarchitecture.domain.lecture.Lecture;
 import hhplus.cleanarchitecture.domain.lecture.LectureSchedule;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -15,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,4 +34,10 @@ public class UserSchedule extends BaseTimeEntity {
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "lecture_schedule_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
 	private LectureSchedule lectureSchedule;
+
+	@Builder
+	public UserSchedule(User user, LectureSchedule lectureSchedule) {
+		this.user = user;
+		this.lectureSchedule = lectureSchedule;
+	}
 }
