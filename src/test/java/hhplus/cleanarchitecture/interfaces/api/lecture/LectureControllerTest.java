@@ -15,8 +15,6 @@
 	import org.springframework.boot.test.context.SpringBootTest;
 	import org.springframework.test.web.servlet.MockMvc;
 
-	import com.fasterxml.jackson.databind.ObjectMapper;
-
 	import hhplus.cleanarchitecture.domain.lecture.Lecture;
 	import hhplus.cleanarchitecture.domain.lecture.LectureSchedule;
 	import hhplus.cleanarchitecture.infrastructure.lecture.LectureRepository;
@@ -29,9 +27,6 @@
 		private MockMvc mockMvc;
 
 		@Autowired
-		private ObjectMapper objectMapper;
-
-		@Autowired
 		private LectureRepository lectureRepository;
 
 		@Autowired
@@ -39,7 +34,7 @@
 
 		@BeforeEach()
 		void clean() {
-			lectureScheduleRepository.findAll();
+			lectureScheduleRepository.deleteAll();
 			lectureRepository.deleteAll();
 		}
 
