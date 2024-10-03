@@ -34,4 +34,8 @@ public class Lecture extends BaseTimeEntity {
 	public Lecture(String name) {
 		this.name = name;
 	}
+
+	public void editCurrentNumber(Integer currentNumber) {
+		this.currentNumber = currentNumber;
+	}
 }
