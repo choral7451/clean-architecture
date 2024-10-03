@@ -193,4 +193,57 @@ class UserControllerTest {
 
 		executorService.shutdown();
 	}
+
+	@Test
+	@DisplayName("강의 중복 신청 방지")
+	public void registerDuplicateSchedule() throws Exception {
+		// given
+		User givenUser = User.builder().name("테스트").build();
+		userRepository.save(givenUser);
+
+		Lecture givenLecture = Lecture.builder().name("테스트 강의").build();
+		lectureRepository.save(givenLecture);
+
+		LectureSchedule givenLectureSchedule = LectureSchedule.builder()
+			.lecture(givenLecture)
+			.startDate(LocalDateTime.now())
+			.endDate(LocalDateTime.now().plusDays(1))
+			.build();
+		lectureScheduleRepository.save(givenLectureSchedule);
+
+		int threadCount = 5;
+		ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+		List<Callable<MvcResult>> callables = new ArrayList<>();
+
+		for (int i = 0; i < threadCount; i++) {
+			String requestBody = String.format("{\"lectureScheduleId\": %d}", givenLectureSchedule.getId());
+			callables.add(() -> {
+				return mockMvc.perform(post("/users/{userId}/register-schedule", givenUser.getId())
+					.contentType(APPLICATION_JSON)
+					.content(requestBody)
+				).andReturn();
+			});
+		}
+
+		List<Future<MvcResult>> futures = executorService.invokeAll(callables);
+
+		int successCount = 0;
+		int errorCount = 0;
+
+		for (Future<MvcResult> future : futures) {
+			MvcResult result = future.get();
+			int status = result.getResponse().getStatus();
+
+			if (status == 200) {
+				successCount++;
+			} else {
+				errorCount++;
+			}
+		}
+
+		assertEquals(1, successCount, "성공한 요청의 수는 1이어야 합니다.");
+		assertEquals(4, errorCount, "실패한 요청의 수는 4이어야 합니다.");
+
+		executorService.shutdown();
+	}
 }

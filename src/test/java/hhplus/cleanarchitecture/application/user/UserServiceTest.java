@@ -21,10 +21,12 @@ import hhplus.cleanarchitecture.domain.lecture.Lecture;
 import hhplus.cleanarchitecture.domain.lecture.LectureSchedule;
 import hhplus.cleanarchitecture.domain.user.User;
 import hhplus.cleanarchitecture.domain.user.UserSchedule;
-import hhplus.cleanarchitecture.infrastructure.lecture.LectureRepository;
 import hhplus.cleanarchitecture.infrastructure.lecture.LectureScheduleRepository;
 import hhplus.cleanarchitecture.infrastructure.user.UserRepository;
 import hhplus.cleanarchitecture.infrastructure.user.UserScheduleRepository;
+import hhplus.cleanarchitecture.interfaces.api.lecture.exception.LectureScheduleNotFound;
+import hhplus.cleanarchitecture.interfaces.api.user.exception.UserNotFound;
+import hhplus.cleanarchitecture.interfaces.api.user.exception.UserScheduleAlreadyExists;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -33,9 +35,6 @@ class UserServiceTest {
 
 	@Mock
 	private UserRepository userRepository;
-
-	@Mock
-	private LectureRepository lectureRepository;
 
 	@Mock
 	private LectureScheduleRepository lectureScheduleRepository;
@@ -86,7 +85,7 @@ class UserServiceTest {
 		Lecture lecture = Lecture.builder().name("테스트강의").build();
 		LectureSchedule lectureSchedule = LectureSchedule.builder().startDate(LocalDateTime.now()).endDate(LocalDateTime.now()).lecture(lecture).build();
 
-		when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+		when(userRepository.findByIdWithLock(anyLong())).thenReturn(Optional.of(user));
 		when(lectureScheduleRepository.findByIdWithLock(anyLong())).thenReturn(Optional.of(lectureSchedule));
 
 		UserScheduleRegisterCommand command = UserScheduleRegisterCommand.builder()
@@ -100,7 +99,7 @@ class UserServiceTest {
 		// then
 		assertEquals(lectureSchedule.getId(), expectedUserScheduleId);
 
-		verify(userRepository).findById(anyLong());
+		verify(userRepository).findByIdWithLock(anyLong());
 		verify(lectureScheduleRepository).findByIdWithLock(anyLong());
 		verify(userScheduleRepository).findUserScheduleByUserIdAndLectureSchedule_Id(anyLong(), anyLong());
 	}
@@ -117,13 +116,13 @@ class UserServiceTest {
 			.lectureScheduleId(lectureScheduleId)
 			.build();
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		UserNotFound exception = assertThrows(UserNotFound.class, () -> {
 			userService.registerSchedule(command);
 		});
 
 		assertEquals("USER_NOT_FOUND", exception.getMessage());
 
-		verify(userRepository).findById(anyLong());
+		verify(userRepository).findByIdWithLock(anyLong());
 		verify(lectureScheduleRepository, never()).findById(anyLong());
 		verify(userScheduleRepository, never()).findUserScheduleByUserIdAndLectureSchedule_Id(anyLong(), anyLong());
 	}
@@ -137,20 +136,20 @@ class UserServiceTest {
 
 		User user = User.builder().name("테스트").build();
 
-		when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+		when(userRepository.findByIdWithLock(anyLong())).thenReturn(Optional.of(user));
 
 		UserScheduleRegisterCommand command = UserScheduleRegisterCommand.builder()
 			.userId(userId)
 			.lectureScheduleId(lectureScheduleId)
 			.build();
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		LectureScheduleNotFound exception = assertThrows(LectureScheduleNotFound.class, () -> {
 			userService.registerSchedule(command);
 		});
 
 		assertEquals("LECTURE_SCHEDULE_NOT_FOUND", exception.getMessage());
 
-		verify(userRepository).findById(anyLong());
+		verify(userRepository).findByIdWithLock(anyLong());
 		verify(userScheduleRepository).findUserScheduleByUserIdAndLectureSchedule_Id(anyLong(), anyLong());
 		verify(lectureScheduleRepository).findByIdWithLock(anyLong());
 	}
@@ -167,7 +166,7 @@ class UserServiceTest {
 		LectureSchedule lectureSchedule = LectureSchedule.builder().startDate(LocalDateTime.now()).endDate(LocalDateTime.now()).lecture(lecture).build();
 		UserSchedule userSchedule = UserSchedule.builder().user(user).lectureSchedule(lectureSchedule).build();
 
-		when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+		when(userRepository.findByIdWithLock(anyLong())).thenReturn(Optional.of(user));
 		when(userScheduleRepository.findUserScheduleByUserIdAndLectureSchedule_Id(anyLong(), anyLong())).thenReturn(Optional.of(userSchedule));
 
 		UserScheduleRegisterCommand command = UserScheduleRegisterCommand.builder()
@@ -175,14 +174,14 @@ class UserServiceTest {
 			.lectureScheduleId(lectureScheduleId)
 			.build();
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		UserScheduleAlreadyExists exception = assertThrows(UserScheduleAlreadyExists.class, () -> {
 			userService.registerSchedule(command);
 		});
 
 		assertEquals("USER_SCHEDULE_ALREADY_EXISTS", exception.getMessage());
 
-		verify(userRepository).findById(anyLong());
-		verify(lectureScheduleRepository, never()).findByIdWithLock(anyLong());
+		verify(userRepository).findByIdWithLock(anyLong());
+		verify(lectureScheduleRepository, never()).findById(anyLong());
 		verify(userScheduleRepository).findUserScheduleByUserIdAndLectureSchedule_Id(anyLong(), anyLong());
 	}
 }

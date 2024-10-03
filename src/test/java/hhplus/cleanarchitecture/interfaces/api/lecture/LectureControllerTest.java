@@ -40,7 +40,7 @@
 
 		@Test
 		@DisplayName("강의 일정 목록 조회")
-		public void getUserPoint() throws Exception {
+		public void lectureSchedules() throws Exception {
 			// given
 
 			Lecture givenLecture = Lecture.builder().name("테스트 강의").build();
