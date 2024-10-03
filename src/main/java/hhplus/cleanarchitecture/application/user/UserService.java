@@ -39,7 +39,7 @@ public class UserService {
 
 	@Transactional
 	public Long registerSchedule(UserScheduleRegisterCommand command) {
-		User user = userRepository.findById(command.getUserId())
+		User user = userRepository.findByIdWithLock(command.getUserId())
 			.orElseThrow(UserNotFound::new);
 
 		Optional<UserSchedule> userSchedule = userScheduleRepository.findUserScheduleByUserIdAndLectureSchedule_Id(
@@ -67,5 +67,5 @@ public class UserService {
 		userScheduleRepository.save(newUserSchedule);
 
 		return newUserSchedule.getId();
- 	}
+	}
 }
