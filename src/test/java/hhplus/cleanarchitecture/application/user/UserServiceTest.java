@@ -21,6 +21,7 @@ import hhplus.cleanarchitecture.domain.lecture.Lecture;
 import hhplus.cleanarchitecture.domain.lecture.LectureSchedule;
 import hhplus.cleanarchitecture.domain.user.User;
 import hhplus.cleanarchitecture.domain.user.UserSchedule;
+import hhplus.cleanarchitecture.infrastructure.lecture.LectureRepository;
 import hhplus.cleanarchitecture.infrastructure.lecture.LectureScheduleRepository;
 import hhplus.cleanarchitecture.infrastructure.user.UserRepository;
 import hhplus.cleanarchitecture.infrastructure.user.UserScheduleRepository;
@@ -35,6 +36,9 @@ class UserServiceTest {
 
 	@Mock
 	private UserRepository userRepository;
+
+	@Mock
+	private LectureRepository lectureRepository;
 
 	@Mock
 	private LectureScheduleRepository lectureScheduleRepository;
